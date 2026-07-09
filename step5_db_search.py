@@ -204,6 +204,28 @@ def minhash_jaccard_est(a: List[int], b: List[int]) -> float:
     inter = intersection_size_sorted(a, b)
     return inter / float(denom)
 
+def confidence_label(top_score: float, gap: float) -> str:
+    """
+    Shared confidence labeling logic for QR search and benchmark scripts.
+
+    Current thresholds are heuristic and should be refined after benchmark testing.
+    """
+    # Absolute similarity threshold first:
+    # prevents unrelated samples from being called confident matches
+    if top_score < 0.15:
+        return "Out of DB / No confident match"
+
+    # Related to something in the DB, but not a strong exact match
+    if top_score < 0.80:
+        return "Near DB / Related"
+
+    # Strong similarity, but top two matches are too close
+    if gap < 0.05:
+        return "In DB / Ambiguous close match"
+
+    # Strong similarity and clear separation from second-best
+    return "In DB / Strong Match"
+
 # -------------------------
 # DB build + search
 # -------------------------
