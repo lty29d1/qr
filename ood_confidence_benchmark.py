@@ -11,14 +11,6 @@ QUERY_DIR = Path("ood_queries")
 OUT_CSV = "ood_confidence_results.csv"
 
 
-def confidence_label(top_score, gap):
-    # Combined rule: absolute similarity + gap
-    if top_score >= 0.80 and gap >= 0.05:
-        return "In DB / Strong Match"
-    elif top_score >= 0.30:
-        return "Near DB / Related"
-    else:
-        return "Out of DB / Low Confidence"
 
 
 def main():
@@ -67,7 +59,7 @@ def main():
         top_name, top_score = results[0]
         second_name, second_score = results[1]
         gap = top_score - second_score
-        label = confidence_label(top_score, gap)
+        label = db.confidence_label(top_score, gap)
 
         rows.append([
             fasta.stem,
