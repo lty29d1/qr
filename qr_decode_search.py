@@ -46,22 +46,6 @@ def get_payload(path_or_payload):
     return path_or_payload.strip()
 
 
-def confidence_label(top_score, gap):
-    # Absolute similarity threshold first:
-    # prevents unrelated samples from being called confident matches
-    if top_score < 0.15:
-        return "Out of DB / No confident match"
-
-    # Related to something in the DB, but not a strong exact match
-    if top_score < 0.80:
-        return "Near DB / Related"
-
-    # Strong similarity, but top two matches are too close
-    if gap < 0.05:
-        return "In DB / Ambiguous close match"
-
-    # Strong similarity and clear separation from second-best
-    return "In DB / Strong Match"
 
 
 def main():
@@ -80,11 +64,11 @@ def main():
 
     results = []
     for ref in refs:
-        mismatch = db.check_compat(query, ref)
-        if mismatch:
-            print("WARNING:", mismatch)
+	mismatch = db.check_compat(query, ref)
+	if mismatch:
+    	raise ValueError(f"Query/reference parameter mismatch: {mismatch}")
 
-        sim = db.minhash_jaccard_est(query["sketch"], ref["sketch"])
+	sim = db.minhash_jaccard_est(query["sketch"], ref["sketch"])
         results.append((ref["name"], sim))
 
     results.sort(key=lambda x: x[1], reverse=True)
@@ -92,7 +76,7 @@ def main():
     top_name, top_score = results[0]
     second_name, second_score = results[1]
     gap = top_score - second_score
-    confidence = confidence_label(top_score, gap)
+    confidence = db.confidence_label(top_score, gap)
 
     print("\n=== QR Decode + Viral DB Search Result ===")
     print(f"Top match: {top_name}")
