@@ -46,8 +46,6 @@ def get_payload(path_or_payload):
     return path_or_payload.strip()
 
 
-
-
 def main():
     if len(sys.argv) < 2:
         print("Usage:")
@@ -63,13 +61,15 @@ def main():
     refs = db.load_db_jsonl(DB_PATH)
 
     results = []
-        for ref in refs:
+    for ref in refs:
         mismatch = db.check_compat(query, ref)
         if mismatch:
             raise ValueError(f"Query/reference parameter mismatch: {mismatch}")
 
         sim = db.minhash_jaccard_est(query["sketch"], ref["sketch"])
         results.append((ref["name"], sim))
+
+    results.sort(key=lambda x: x[1], reverse=True)
 
     top_name, top_score = results[0]
     second_name, second_score = results[1]
